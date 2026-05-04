@@ -1,78 +1,37 @@
 # HireTrackr
 
-AI-assisted job application tracker built to help candidates run a focused, data-driven job search.
+HireTrackr is a full-stack job application tracker that combines pipeline management with resume analysis and interview-focused insights.
 
-## Why This Project Stands Out
+## Highlights
 
-Most job trackers only store applications. HireTrackr goes further by combining:
-- Resume intelligence (PDF parsing and keyword extraction)
-- ATS-style match scoring against job descriptions
-- Skill-gap visibility with actionable suggestions
-- Kanban workflow for pipeline management
-- Insight dashboards and follow-up reminders
-
-This project demonstrates end-to-end product thinking: user authentication, file handling, analytics, dashboard UX, and production-ready API structure.
-
-## Recruiter Snapshot
-
-- **Role fit:** Full-stack MERN-style product engineering
-- **Scope:** Authentication, CRUD workflows, file upload/parsing, analytics, and recommendations
-- **Architecture:** Separated client/server apps with clean controller-route-model layering
-- **Business value:** Helps users prioritize better-fit roles and improve application quality
-
-## Core Features
-
-1. **Secure User Authentication**
-   - JWT-based registration/login
-   - Protected routes and authenticated profile access
-
-2. **Resume Upload and Parsing**
-   - PDF ingestion via Multer
-   - Text extraction using pdf-parse
-   - Skill/experience keyword indexing for downstream analysis
-
-3. **ATS Match Analysis**
-   - Job description keyword extraction
-   - Match score calculation
-   - Missing keyword and optimization guidance
-
-4. **Smart Role Recommendations**
-   - Skill-to-role mapping
-   - Ranked role suggestions based on profile relevance
-
-5. **Application Pipeline Tracker**
-   - Full CRUD for job applications
-   - Drag-and-drop Kanban board (`Applied`, `Interview`, `Rejected`)
-   - Notes, company context, and role details
-
-6. **Insights and Analytics**
-   - Total applications, interview rate, rejection rate
-   - Status distribution visualizations
-   - Most common missing-skill trends
-
-7. **Follow-up Intelligence**
-   - Reminder logic for stale applications
-   - Insight endpoints for search strategy improvements
+- JWT authentication with protected routes
+- Resume upload (PDF) and keyword extraction
+- ATS-style job description analysis and match scoring
+- Drag-and-drop Kanban board for application stages
+- Role recommendations based on extracted resume skills
+- Analytics for interview rate, rejection rate, and missing skills
+- Follow-up reminder endpoint for stale applications
 
 ## Tech Stack
 
-**Frontend**
-- React 19 + Vite
+Frontend
+- React 19
+- Vite 8
 - React Router
 - Axios
 - Recharts
-- hello-pangea/dnd
+- @hello-pangea/dnd
 - Framer Motion
 
-**Backend**
-- Node.js + Express
+Backend
+- Node.js
+- Express 5
 - MongoDB + Mongoose
-- JWT authentication
-- Multer (file uploads)
-- pdf-parse (resume parsing)
-- Express Validator
+- JWT + bcryptjs
+- Multer + pdf-parse
+- express-validator
 
-## Project Structure
+## Repository Structure
 
 ```txt
 job-tracker/
@@ -84,6 +43,8 @@ job-tracker/
       pages/
   server/
     src/
+      app.js
+      server.js
       config/
       controllers/
       middleware/
@@ -92,7 +53,13 @@ job-tracker/
       utils/
 ```
 
-## Local Setup
+## Prerequisites
+
+- Node.js 18+
+- npm 9+
+- MongoDB instance (local or Atlas)
+
+## Local Development Setup
 
 ### 1. Install dependencies
 
@@ -105,86 +72,106 @@ npm install
 
 ### 2. Configure environment variables
 
-Create the following files:
-- `server/.env` (based on `server/.env.example`)
-- `client/.env` (based on `client/.env.example`)
+Client
 
-Minimum backend variables:
-- `MONGO_URI`
-- `JWT_SECRET`
-- `CLIENT_URL`
+Create client/.env (or copy from client/.env.example):
 
-Frontend variable:
-- `VITE_API_URL`
+```bash
+VITE_API_URL=http://localhost:5000/api
+```
 
-### 3. Run the app
+Server
 
-Backend:
+Create server/.env with:
+
+```bash
+PORT=5000
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_super_secret_key
+CLIENT_URL=http://localhost:5173
+```
+
+### 3. Start both apps
+
+Terminal 1 (backend):
 
 ```bash
 cd server
 npm run dev
 ```
 
-Frontend:
+Terminal 2 (frontend):
 
 ```bash
 cd client
 npm run dev
 ```
 
-Open http://localhost:5173
+Frontend: http://localhost:5173
 
-## Key API Endpoints
+Backend health check: http://localhost:5000/api/health
 
-**Auth**
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-- `GET /api/auth/me`
-- `PUT /api/auth/profile`
+## Available Scripts
 
-**Resume**
-- `GET /api/resume`
-- `POST /api/resume/upload`
-- `POST /api/resume/analyze`
+Client (inside client)
+- npm run dev
+- npm run build
+- npm run preview
+- npm run lint
 
-**Applications**
-- `GET /api/applications`
-- `POST /api/applications`
-- `PUT /api/applications/:id`
-- `DELETE /api/applications/:id`
-- `GET /api/applications/reminders/list?days=7`
+Server (inside server)
+- npm run dev
+- npm start
 
-**Insights**
-- `GET /api/insights/recommendations`
-- `GET /api/insights/analytics`
+## API Routes
 
-## Deployment
+Base URL: /api
 
-### Frontend (Vercel)
-- Root directory: `client`
-- Build command: `npm run build`
-- Output directory: `dist`
-- Env: `VITE_API_URL=https://<render-backend-url>/api`
+Auth
+- POST /auth/register
+- POST /auth/login
+- GET /auth/me
+- PUT /auth/profile
 
-### Backend (Render)
-- Root directory: `server`
-- Build command: `npm install`
-- Start command: `npm start`
-- Required env: `MONGO_URI`, `JWT_SECRET`, `CLIENT_URL`
+Resume
+- GET /resume
+- POST /resume/upload
+- POST /resume/analyze
 
-### Database (MongoDB Atlas)
-- Create a cluster/database (example: `hiretrackr`)
-- Use Atlas URI in `MONGO_URI`
+Applications
+- GET /applications
+- POST /applications
+- PUT /applications/:id
+- DELETE /applications/:id
+- GET /applications/reminders/list?days=7
 
-## What I Would Build Next
+Insights
+- GET /insights/recommendations
+- GET /insights/analytics
 
-- Cloud storage integration (S3/Cloudinary) for durable resume files
-- Semantic matching using embeddings for deeper JD analysis
-- Automated reminder delivery (email/WhatsApp)
-- External job API integration for live opportunity discovery
-- Advanced trend analysis by role, location, and company stage
+All routes except register/login require a Bearer token.
 
-## Resume-Friendly Project Summary
+## Deployment Notes
 
-Designed and built a full-stack job search platform that combines application tracking, resume intelligence, and ATS-style scoring. Implemented secure JWT auth, drag-and-drop Kanban workflow, PDF parsing pipeline, and analytics dashboards to help users improve interview conversion through data-backed decisions.
+Frontend (Vercel)
+- Root directory: client
+- Build command: npm run build
+- Output directory: dist
+- Environment variable: VITE_API_URL=https://your-backend-url/api
+
+Backend (Render)
+- Root directory: server
+- Build command: npm install
+- Start command: npm start
+- Environment variables: PORT, MONGO_URI, JWT_SECRET, CLIENT_URL
+
+MongoDB
+- Use MongoDB Atlas or a self-hosted MongoDB instance
+- Set connection string in MONGO_URI
+
+## Future Improvements
+
+- Persist resume files in cloud storage (S3/Cloudinary)
+- Add semantic matching with embeddings
+- Add automated follow-up notifications (email/WhatsApp)
+- Add richer trends by role, location, and company
