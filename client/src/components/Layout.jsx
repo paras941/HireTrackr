@@ -250,23 +250,30 @@ const Layout = ({ children }) => {
 };
 
 const DropdownItem = ({ icon, label }) => (
-  <button className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100">
+  <motion.button
+    whileHover={{ x: 4 }}
+    whileTap={{ scale: 0.98 }}
+    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-slate-700 transition-all hover:bg-indigo-50 hover:text-indigo-700"
+  >
     {icon}
     {label}
-  </button>
+  </motion.button>
 );
 
 const NotificationItem = ({ icon, title, message, time }) => (
-  <div className="flex cursor-pointer gap-3 rounded-xl p-3 transition-colors hover:bg-slate-50">
-    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-slate-100">
+  <motion.div
+    whileHover={{ backgroundColor: "rgba(249, 250, 251, 0.5)" }}
+    className="flex cursor-pointer gap-3 rounded-xl p-3 transition-all hover:bg-slate-50"
+  >
+    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-slate-100 to-slate-200">
       {icon}
     </div>
     <div className="flex-1 overflow-hidden">
-      <p className="font-medium text-slate-900">{title}</p>
+      <p className="font-semibold text-slate-900">{title}</p>
       <p className="truncate text-sm text-slate-500">{message}</p>
       <p className="mt-1 text-xs text-slate-400">{time}</p>
     </div>
-  </div>
+  </motion.div>
 );
 
 export default Layout;
