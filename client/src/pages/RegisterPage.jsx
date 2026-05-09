@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "react-hot-toast";
-import { ArrowRight, Briefcase, CheckCircle2 } from "lucide-react";
+import { ArrowRight, Briefcase, CheckCircle2, User, Mail, Lock } from "lucide-react";
 import http from "../api/http";
 import { useAuth } from "../context/AuthContext";
 
@@ -103,39 +103,48 @@ const RegisterPage = () => {
               className="space-y-5"
             >
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Full Name</label>
-                <input
-                  type="text"
-                  className="input-modern"
-                  placeholder="John Doe"
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  disabled={loading}
-                />
+                <label className="block text-sm font-bold text-gray-700">Full Name</label>
+                <div className="relative group">
+                  <User className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-indigo-400 transition-colors group-focus-within:text-indigo-600" />
+                  <input
+                    type="text"
+                    className="input-modern pl-12"
+                    placeholder="John Doe"
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    disabled={loading}
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Email</label>
-                <input
-                  type="email"
-                  className="input-modern"
-                  placeholder="you@example.com"
-                  value={form.email}
-                  onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  disabled={loading}
-                />
+                <label className="block text-sm font-bold text-gray-700">Email Address</label>
+                <div className="relative group">
+                  <Mail className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-indigo-400 transition-colors group-focus-within:text-indigo-600" />
+                  <input
+                    type="email"
+                    className="input-modern pl-12"
+                    placeholder="you@example.com"
+                    value={form.email}
+                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                    disabled={loading}
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Password</label>
-                <input
-                  type="password"
-                  className="input-modern"
-                  placeholder="Min. 6 characters"
-                  value={form.password}
-                  onChange={(e) => setForm({ ...form, password: e.target.value })}
-                  disabled={loading}
-                />
+                <label className="block text-sm font-bold text-gray-700">Password</label>
+                <div className="relative group">
+                  <Lock className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-indigo-400 transition-colors group-focus-within:text-indigo-600" />
+                  <input
+                    type="password"
+                    className="input-modern pl-12"
+                    placeholder="Min. 6 characters"
+                    value={form.password}
+                    onChange={(e) => setForm({ ...form, password: e.target.value })}
+                    disabled={loading}
+                  />
+                </div>
               </div>
 
               <motion.button
@@ -143,14 +152,17 @@ const RegisterPage = () => {
                 disabled={loading}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="btn-primary flex w-full items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-70"
+                className="btn-primary flex w-full items-center justify-center gap-2 py-3 text-lg disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {loading ? (
-                  <div className="spinner" />
+                  <>
+                    <div className="spinner" />
+                    <span>Creating account...</span>
+                  </>
                 ) : (
                   <>
                     Create Account
-                    <ArrowRight className="h-5 w-5" />
+                    <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                   </>
                 )}
               </motion.button>
