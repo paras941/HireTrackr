@@ -4,9 +4,9 @@ import { Briefcase, GripVertical, Calendar, MoreHorizontal, Trash2, ExternalLink
 import { useState } from "react";
 
 const STATUSES = [
-  { id: "Applied", label: "Applied", color: "from-blue-500 to-indigo-600", bg: "bg-blue-50", text: "text-blue-700" },
-  { id: "Interview", label: "Interview", color: "from-green-500 to-emerald-600", bg: "bg-green-50", text: "text-green-700" },
-  { id: "Rejected", label: "Rejected", color: "from-red-500 to-pink-600", bg: "bg-red-50", text: "text-red-700" },
+  { id: "Applied", label: "Applied", color: "from-blue-500 to-cyan-500", bg: "bg-blue-50", text: "text-blue-700", icon: "📝" },
+  { id: "Interview", label: "Interview", color: "from-purple-500 to-pink-500", bg: "bg-purple-50", text: "text-purple-700", icon: "🎯" },
+  { id: "Rejected", label: "Rejected", color: "from-slate-500 to-slate-600", bg: "bg-slate-50", text: "text-slate-700", icon: "✋" },
 ];
 
 const KanbanBoard = ({ applications, onStatusChange, onDelete }) => {
@@ -52,21 +52,31 @@ const KanbanBoard = ({ applications, onStatusChange, onDelete }) => {
                 {...provided.droppableProps}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`min-h-[400px] rounded-2xl p-4 transition-all duration-300 ${
+                transition={{ duration: 0.3 }}
+                className={`group relative min-h-[450px] overflow-hidden rounded-2xl p-5 transition-all duration-300 ${
                   snapshot.isDraggingOver
-                    ? "bg-indigo-50 ring-2 ring-indigo-400 ring-offset-2"
-                    : "bg-slate-50/80"
-                }`}
+                    ? "bg-gradient-to-br from-indigo-50/80 to-purple-50/80 ring-2 ring-indigo-400 ring-offset-2 shadow-lg"
+                    : "bg-gradient-to-b from-white/90 to-slate-50/90 shadow-md hover:shadow-lg"
+                } border border-slate-200/50`}
               >
+                {/* Gradient Accent Bar */}
+                <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${status.color}`} />
+                
                 {/* Column Header */}
-                <div className="mb-4 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className={`h-3 w-3 rounded-full bg-gradient-to-r ${status.color}`} />
-                    <h3 className="font-semibold text-slate-900">{status.label}</h3>
-                    <span className={`ml-2 rounded-full px-2 py-0.5 text-xs font-medium ${status.bg} ${status.text}`}>
-                      {grouped[status.id].length}
-                    </span>
+                <div className="mb-5 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={`text-2xl`}>{status.icon}</div>
+                    <div>
+                      <h3 className="font-bold text-slate-900 text-lg">{status.label}</h3>
+                      <p className="text-xs text-slate-500 mt-1">Manage your {status.label.toLowerCase()} jobs</p>
+                    </div>
                   </div>
+                  <motion.span 
+                    whileHover={{ scale: 1.1 }}
+                    className={`rounded-full px-3 py-1.5 text-sm font-bold ${status.bg} ${status.text} shadow-sm`}
+                  >
+                    {grouped[status.id].length}
+                  </motion.span>
                 </div>
 
                 {/* Cards Container */}
@@ -78,23 +88,25 @@ const KanbanBoard = ({ applications, onStatusChange, onDelete }) => {
                           <motion.div
                             ref={dragProvided.innerRef}
                             {...dragProvided.draggableProps}
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.8 }}
-                            transition={{ duration: 0.2 }}
-                            className={`group relative overflow-hidden rounded-xl bg-white p-4 shadow-sm transition-all duration-200 ${
+                            initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.8, y: -10 }}
+                            transition={{ duration: 0.25, type: "spring", stiffness: 300, damping: 20 }}
+                            whileHover={{ y: -4 }}
+                            className={`group relative overflow-hidden rounded-xl bg-white p-4 transition-all duration-200 border border-slate-200/50 ${
                               dragSnapshot.isDragging
-                                ? "rotate-2 scale-105 shadow-2xl ring-2 ring-indigo-400"
-                                : "hover:shadow-md"
+                                ? "rotate-2 scale-105 shadow-2xl ring-2 ring-indigo-400 drop-shadow-xl"
+                                : "shadow-md hover:shadow-xl hover:border-slate-300"
                             }`}
                           >
                             {/* Drag Handle */}
-                            <div
+                            <motion.div
                               {...dragProvided.dragHandleProps}
-                              className="absolute left-2 top-1/2 -translate-y-1/2 cursor-grab opacity-0 transition-opacity group-hover:opacity-100 active:cursor-grabbing"
+                              whileHover={{ scale: 1.2 }}
+                              className="absolute left-2 top-1/2 -translate-y-1/2 cursor-grab opacity-0 transition-opacity group-hover:opacity-100 active:cursor-grabbing p-1 rounded-lg hover:bg-slate-100"
                             >
                               <GripVertical className="h-4 w-4 text-slate-400" />
-                            </div>
+                            </motion.div>
 
                             {/* Card Content */}
                             <div className="ml-4">
@@ -109,17 +121,18 @@ const KanbanBoard = ({ applications, onStatusChange, onDelete }) => {
 
                                 {/* ATS Score Badge */}
                                 {app.atsScore > 0 && (
-                                  <div
-                                    className={`rounded-lg px-2 py-1 text-xs font-semibold ${
+                                  <motion.div
+                                    whileHover={{ scale: 1.1 }}
+                                    className={`rounded-lg px-3 py-1.5 text-xs font-bold shadow-md ${
                                       app.atsScore >= 70
-                                        ? "bg-green-100 text-green-700"
+                                        ? "bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 border border-green-200"
                                         : app.atsScore >= 40
-                                        ? "bg-yellow-100 text-yellow-700"
-                                        : "bg-red-100 text-red-700"
+                                        ? "bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-700 border border-yellow-200"
+                                        : "bg-gradient-to-r from-red-100 to-pink-100 text-red-700 border border-red-200"
                                     }`}
                                   >
-                                    {app.atsScore}%
-                                  </div>
+                                    ⚡ {app.atsScore}%
+                                  </motion.div>
                                 )}
                               </div>
 
