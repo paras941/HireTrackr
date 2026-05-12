@@ -189,12 +189,12 @@ const LoginPage = () => {
               className="space-y-5"
             >
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Email</label>
-                <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                <label className="block text-sm font-bold text-gray-700">Email Address</label>
+                <div className="relative group">
+                  <Mail className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-indigo-400 transition-colors group-focus-within:text-indigo-600" />
                   <input
                     type="email"
-                    className="input-modern pl-14"
+                    className="input-modern pl-12"
                     placeholder="you@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -204,12 +204,12 @@ const LoginPage = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Password</label>
-                <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                <label className="block text-sm font-bold text-gray-700">Password</label>
+                <div className="relative group">
+                  <Lock className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-indigo-400 transition-colors group-focus-within:text-indigo-600" />
                   <input
                     type="password"
-                    className="input-modern pl-14"
+                    className="input-modern pl-12"
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -223,17 +223,31 @@ const LoginPage = () => {
                 disabled={loading}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="btn-primary flex w-full items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-70"
+                className="btn-primary flex w-full items-center justify-center gap-2 py-3 text-lg disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {loading ? (
-                  <div className="spinner" />
+                  <>
+                    <div className="spinner" />
+                    <span>Signing in...</span>
+                  </>
                 ) : (
                   <>
                     Sign In
-                    <ArrowRight className="h-5 w-5" />
+                    <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                   </>
                 )}
               </motion.button>
+
+              <motion.div
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ delay: 0.5, duration: 0.6 }}
+                className="relative my-6 flex items-center gap-3 origin-left"
+              >
+                <div className="h-px flex-1 bg-gradient-to-r from-gray-300 to-transparent" />
+                <span className="text-xs font-semibold uppercase tracking-widest text-gray-400">OR</span>
+                <div className="h-px flex-1 bg-gradient-to-l from-gray-300 to-transparent" />
+              </motion.div>
             </motion.form>
 
             <motion.div
