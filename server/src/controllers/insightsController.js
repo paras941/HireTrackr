@@ -10,7 +10,7 @@ const ROLE_KEYWORDS = [
 
 const recommendations = async (req, res, next) => {
   try {
-    const resume = await Resume.findOne({ user: req.userId });
+    const resume = await Resume.findOne({ user: req.userId }).lean();
     if (!resume) {
       return res.status(400).json({ message: "Upload resume for recommendations" });
     }
@@ -30,7 +30,7 @@ const recommendations = async (req, res, next) => {
 
 const analytics = async (req, res, next) => {
   try {
-    const apps = await JobApplication.find({ user: req.userId });
+    const apps = await JobApplication.find({ user: req.userId }).lean();
     const total = apps.length;
     const interviews = apps.filter((a) => a.status === "Interview").length;
     const rejected = apps.filter((a) => a.status === "Rejected").length;

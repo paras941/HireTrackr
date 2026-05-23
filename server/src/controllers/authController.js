@@ -63,7 +63,7 @@ const login = async (req, res, next) => {
 
 const me = async (req, res, next) => {
   try {
-    const user = await User.findById(req.userId).select("-password");
+    const user = await User.findById(req.userId).select("-password").lean();
     return res.json(user);
   } catch (error) {
     return next(error);

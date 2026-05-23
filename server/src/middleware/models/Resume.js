@@ -12,4 +12,7 @@ const resumeSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Ensure one resume per user for fast lookup and to support upserts
+resumeSchema.index({ user: 1 }, { unique: true });
+
 module.exports = mongoose.model("Resume", resumeSchema);
