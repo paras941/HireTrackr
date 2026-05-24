@@ -20,4 +20,8 @@ const jobApplicationSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Indexes to speed up common queries
+jobApplicationSchema.index({ user: 1, createdAt: -1 });
+jobApplicationSchema.index({ user: 1, status: 1, appliedDate: 1 });
+
 module.exports = mongoose.model("JobApplication", jobApplicationSchema);

@@ -35,7 +35,7 @@ const uploadResume = async (req, res, next) => {
 const analyzeJobDescription = async (req, res, next) => {
   try {
     const { jobDescription } = req.body;
-    const resume = await Resume.findOne({ user: req.userId });
+    const resume = await Resume.findOne({ user: req.userId }).lean();
     if (!resume) {
       return res.status(400).json({ message: "Upload resume before analysis" });
     }
@@ -60,7 +60,7 @@ const analyzeJobDescription = async (req, res, next) => {
 
 const getResume = async (req, res, next) => {
   try {
-    const resume = await Resume.findOne({ user: req.userId });
+    const resume = await Resume.findOne({ user: req.userId }).lean();
     return res.json(resume);
   } catch (error) {
     return next(error);
