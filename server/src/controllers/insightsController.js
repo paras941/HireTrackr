@@ -1,5 +1,5 @@
-const Resume = require("../models/Resume");
-const JobApplication = require("../models/JobApplication");
+const Resume = require("../middleware/models/Resume");
+const JobApplication = require("../middleware/models/JobApplication");
 
 const ROLE_KEYWORDS = [
   { role: "Frontend Developer", keywords: ["react", "typescript", "css", "frontend", "redux"] },

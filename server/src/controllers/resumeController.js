@@ -1,5 +1,5 @@
 const pdfParse = require("pdf-parse");
-const Resume = require("../models/Resume");
+const Resume = require("../middleware/models/Resume");
 const { extractSections } = require("../utils/resumeUtils");
 const { extractKeywords, calculateAtsScore } = require("../utils/keywordUtils");
 
