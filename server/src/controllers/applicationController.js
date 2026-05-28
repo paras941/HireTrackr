@@ -1,5 +1,5 @@
 const dayjs = require("dayjs");
-const JobApplication = require("../models/JobApplication");
+const JobApplication = require("../middleware/models/JobApplication");
 
 const listApplications = async (req, res, next) => {
   try {
