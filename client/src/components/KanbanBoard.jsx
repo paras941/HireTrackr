@@ -9,11 +9,13 @@ const STATUSES = [
   { id: "Rejected", label: "Rejected", color: "from-slate-500 to-slate-600", bg: "bg-slate-50", text: "text-slate-700", icon: "✋" },
 ];
 
-const KanbanBoard = ({ applications, onStatusChange, onDelete }) => {
+const KanbanBoard = ({ applications = [], onStatusChange, onDelete }) => {
   const [draggingId, setDraggingId] = useState(null);
 
+  const safeApplications = Array.isArray(applications) ? applications : [];
+
   const grouped = STATUSES.reduce((acc, status) => {
-    acc[status.id] = applications.filter((a) => a.status === status.id);
+    acc[status.id] = safeApplications.filter((a) => a.status === status.id);
     return acc;
   }, {});
 

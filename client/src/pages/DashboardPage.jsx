@@ -40,7 +40,7 @@ const DashboardPage = () => {
       ]);
       setResume(resumeRes.data);
       setRecommendations(recRes.data || []);
-      setApplications(appRes.data || []);
+      setApplications(appRes.data?.data || appRes.data || []);
       setAnalytics(analyticsRes.data);
       setReminders(reminderRes.data?.reminders || []);
     } finally {
