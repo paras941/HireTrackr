@@ -12,10 +12,10 @@ const recommendations = async (req, res, next) => {
   try {
     const resume = await Resume.findOne({ user: req.userId }).lean();
     if (!resume) {
-      return res.status(400).json({ message: "Upload resume for recommendations" });
+      return res.json([]);
     }
 
-    const resumeSet = new Set(resume.keywords.map((k) => k.toLowerCase()));
+    const resumeSet = new Set((resume.keywords || []).map((k) => k.toLowerCase()));
     const roles = ROLE_KEYWORDS.map((entry) => {
       const matched = entry.keywords.filter((k) => resumeSet.has(k));
       const score = Math.round((matched.length / entry.keywords.length) * 100);
