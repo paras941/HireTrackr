@@ -18,6 +18,7 @@ import { useAuth } from "../context/AuthContext";
 const DashboardPage = () => {
   const { user } = useAuth();
   const [resume, setResume] = useState(null);
+  const [isResumeDragging, setIsResumeDragging] = useState(false);
   const [jobDescription, setJobDescription] = useState("");
   const [analysis, setAnalysis] = useState(null);
   const [recommendations, setRecommendations] = useState([]);
@@ -52,14 +53,26 @@ const DashboardPage = () => {
     refreshData();
   }, []);
 
+  const handleResumeFile = (file) => {
+    if (!file) {
+      return;
+    }
+
+    const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+    if (!isPdf) {
+      toast.error("Please upload a PDF file");
+      return;
+    }
+
+    uploadResume(file);
+  };
+
   const uploadResume = async (file) => {
     setLoading((l) => ({ ...l, upload: true }));
     try {
       const formData = new FormData();
       formData.append("resume", file);
-      await http.post("/resume/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      await http.post("/resume/upload", formData);
       toast.success("Resume uploaded successfully!");
       refreshData();
     } catch (err) {
@@ -133,6 +146,27 @@ const DashboardPage = () => {
     if (score >= 70) return "from-green-500 to-emerald-500";
     if (score >= 40) return "from-yellow-500 to-orange-500";
     return "from-red-500 to-pink-500";
+  };
+
+  const handleResumeDragOver = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsResumeDragging(true);
+  };
+
+  const handleResumeDragLeave = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsResumeDragging(false);
+  };
+
+  const handleResumeDrop = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsResumeDragging(false);
+
+    const [file] = event.dataTransfer.files || [];
+    handleResumeFile(file);
   };
 
   const containerVariants = {
@@ -226,12 +260,21 @@ const DashboardPage = () => {
             <div className="grid gap-6 lg:grid-cols-2">
               {/* Upload Section */}
               <div>
-                <label className="group relative flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-8 transition-all hover:border-indigo-400 hover:bg-indigo-50/50">
+                <label
+                  className={`group relative flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed p-8 transition-all ${
+                    isResumeDragging
+                      ? "border-indigo-500 bg-indigo-50/80 shadow-lg shadow-indigo-500/10"
+                      : "border-slate-200 bg-slate-50/50 hover:border-indigo-400 hover:bg-indigo-50/50"
+                  }`}
+                  onDragOver={handleResumeDragOver}
+                  onDragLeave={handleResumeDragLeave}
+                  onDrop={handleResumeDrop}
+                >
                   <input
                     type="file"
                     accept="application/pdf"
                     className="hidden"
-                    onChange={(e) => e.target.files?.[0] && uploadResume(e.target.files[0])}
+                    onChange={(e) => handleResumeFile(e.target.files?.[0])}
                     disabled={loading.upload}
                   />
                   {loading.upload ? (
