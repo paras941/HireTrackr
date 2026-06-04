@@ -1,12 +1,12 @@
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
 import { motion, AnimatePresence } from "framer-motion";
-import { Briefcase, GripVertical, Calendar, MoreHorizontal, Trash2, ExternalLink } from "lucide-react";
+import { Briefcase, GripVertical, Calendar, Trash2, ExternalLink } from "lucide-react";
 import { useState } from "react";
 
 const STATUSES = [
-  { id: "Applied", label: "Applied", color: "from-blue-500 to-cyan-500", bg: "bg-blue-50", text: "text-blue-700", icon: "📝" },
-  { id: "Interview", label: "Interview", color: "from-purple-500 to-pink-500", bg: "bg-purple-50", text: "text-purple-700", icon: "🎯" },
-  { id: "Rejected", label: "Rejected", color: "from-slate-500 to-slate-600", bg: "bg-slate-50", text: "text-slate-700", icon: "✋" },
+  { id: "Applied", label: "Applied", color: "from-blue-500 to-cyan-500", bg: "bg-blue-500/10", text: "text-blue-600 dark:text-blue-400", icon: "📝" },
+  { id: "Interview", label: "Interview", color: "from-emerald-500 to-teal-500", bg: "bg-emerald-500/10", text: "text-emerald-600 dark:text-emerald-400", icon: "🎯" },
+  { id: "Rejected", label: "Rejected", color: "from-rose-500 to-pink-500", bg: "bg-rose-500/10", text: "text-rose-600 dark:text-rose-450", icon: "✋" },
 ];
 
 const KanbanBoard = ({ applications = [], onStatusChange, onDelete }) => {
@@ -40,148 +40,164 @@ const KanbanBoard = ({ applications = [], onStatusChange, onDelete }) => {
     return new Date(date).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
+      year: "numeric"
     });
+  };
+
+  const getCompanyColor = (companyName) => {
+    const colors = [
+      "bg-indigo-500/10 text-indigo-500 dark:bg-indigo-400/10 dark:text-indigo-400 border-indigo-500/15 dark:border-indigo-400/15",
+      "bg-emerald-500/10 text-emerald-500 dark:bg-emerald-400/10 dark:text-emerald-400 border-emerald-500/15 dark:border-emerald-400/15",
+      "bg-pink-500/10 text-pink-500 dark:bg-pink-400/10 dark:text-pink-400 border-pink-500/15 dark:border-pink-400/15",
+      "bg-amber-500/10 text-amber-500 dark:bg-amber-400/10 dark:text-amber-400 border-amber-500/15 dark:border-amber-400/15",
+      "bg-violet-500/10 text-violet-500 dark:bg-violet-400/10 dark:text-violet-400 border-violet-500/15 dark:border-violet-400/15",
+      "bg-rose-500/10 text-rose-500 dark:bg-rose-450/10 dark:text-rose-450 border-rose-500/15 dark:border-rose-450/15",
+    ];
+    if (!companyName) return colors[0];
+    const charCode = companyName.charCodeAt(0) || 0;
+    return colors[charCode % colors.length];
   };
 
   return (
     <DragDropContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-5 lg:grid-cols-3">
         {STATUSES.map((status) => (
           <Droppable key={status.id} droppableId={status.id}>
             {(provided, snapshot) => (
               <motion.div
                 ref={provided.innerRef}
                 {...provided.droppableProps}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                className={`group relative min-h-[450px] overflow-hidden rounded-2xl p-5 transition-all duration-300 ${
+                transition={{ duration: 0.35 }}
+                className={`group relative min-h-[480px] overflow-hidden rounded-2xl p-5 transition-all duration-300 ${
                   snapshot.isDraggingOver
-                    ? "bg-gradient-to-br from-indigo-50/80 to-purple-50/80 ring-2 ring-indigo-400 ring-offset-2 shadow-lg"
-                    : "bg-gradient-to-b from-white/90 to-slate-50/90 shadow-md hover:shadow-lg"
-                } border border-slate-200/50`}
+                    ? "bg-gradient-to-b from-indigo-50/50 to-purple-50/50 dark:from-indigo-950/10 dark:to-purple-950/10 border-indigo-400/60 dark:border-indigo-500/30 shadow-lg shadow-indigo-500/5 ring-1 ring-indigo-400/30"
+                    : "bg-white/60 dark:bg-slate-900/40 border-slate-200/60 dark:border-slate-800/80 shadow-sm"
+                } border backdrop-blur-sm`}
               >
-                {/* Gradient Accent Bar */}
+                {/* Accent Color Band */}
                 <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${status.color}`} />
                 
                 {/* Column Header */}
                 <div className="mb-5 flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className={`text-2xl`}>{status.icon}</div>
+                    <span className="text-xl" role="img" aria-label={status.label}>{status.icon}</span>
                     <div>
-                      <h3 className="font-bold text-slate-900 text-lg">{status.label}</h3>
-                      <p className="text-xs text-slate-500 mt-1">Manage your {status.label.toLowerCase()} jobs</p>
+                      <h3 className="font-extrabold text-slate-900 dark:text-white text-base tracking-tight">{status.label}</h3>
+                      <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                        {grouped[status.id].length} applications
+                      </p>
                     </div>
                   </div>
-                  <motion.span 
-                    whileHover={{ scale: 1.1 }}
-                    className={`rounded-full px-3 py-1.5 text-sm font-bold ${status.bg} ${status.text} shadow-sm`}
-                  >
+                  <span className={`rounded-lg px-2.5 py-1 text-xs font-extrabold ${status.bg} ${status.text} border border-transparent`}>
                     {grouped[status.id].length}
-                  </motion.span>
+                  </span>
                 </div>
 
-                {/* Cards Container */}
-                <div className="space-y-3">
-                  <AnimatePresence>
+                {/* Cards Grid */}
+                <div className="space-y-3 min-h-[380px]">
+                  <AnimatePresence mode="popLayout">
                     {grouped[status.id].map((app, index) => (
                       <Draggable key={app._id} draggableId={app._id} index={index}>
                         {(dragProvided, dragSnapshot) => (
                           <motion.div
                             ref={dragProvided.innerRef}
                             {...dragProvided.draggableProps}
-                            initial={{ opacity: 0, scale: 0.8, y: 10 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.8, y: -10 }}
-                            transition={{ duration: 0.25, type: "spring", stiffness: 300, damping: 20 }}
-                            whileHover={{ y: -4 }}
-                            className={`group relative overflow-hidden rounded-xl bg-white p-4 transition-all duration-200 border border-slate-200/50 ${
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            transition={{ duration: 0.2 }}
+                            whileHover={{ y: -2 }}
+                            className={`group/card relative overflow-hidden rounded-xl border p-4 transition-all duration-200 ${
                               dragSnapshot.isDragging
-                                ? "rotate-2 scale-105 shadow-2xl ring-2 ring-indigo-400 drop-shadow-xl"
-                                : "shadow-md hover:shadow-xl hover:border-slate-300"
+                                ? "rotate-2 scale-103 shadow-2xl border-indigo-500/40 dark:border-indigo-400/40 bg-white dark:bg-slate-900 ring-2 ring-indigo-500/10"
+                                : "bg-white dark:bg-slate-900/60 border-slate-200/50 dark:border-slate-800/80 hover:border-slate-350 dark:hover:border-slate-700 hover:shadow-md"
                             }`}
                           >
                             {/* Drag Handle */}
-                            <motion.div
+                            <div
                               {...dragProvided.dragHandleProps}
-                              whileHover={{ scale: 1.2 }}
-                              className="absolute left-2 top-1/2 -translate-y-1/2 cursor-grab opacity-0 transition-opacity group-hover:opacity-100 active:cursor-grabbing p-1 rounded-lg hover:bg-slate-100"
+                              className="absolute left-1.5 top-1/2 -translate-y-1/2 cursor-grab active:cursor-grabbing p-1 rounded-md text-slate-300 dark:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-850 hover:text-slate-500 dark:hover:text-slate-400 transition-colors opacity-0 group-hover/card:opacity-100"
                             >
-                              <GripVertical className="h-4 w-4 text-slate-400" />
-                            </motion.div>
+                              <GripVertical className="h-4 w-4" />
+                            </div>
 
-                            {/* Card Content */}
-                            <div className="ml-4">
-                              <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                  <h4 className="font-semibold text-slate-900">{app.role}</h4>
-                                  <div className="mt-1 flex items-center gap-2 text-sm text-slate-500">
-                                    <Briefcase className="h-3.5 w-3.5" />
-                                    <span>{app.company}</span>
+                            {/* Card Body */}
+                            <div className="ml-3.5">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="font-bold text-slate-850 dark:text-white text-sm tracking-tight truncate">
+                                    {app.role}
+                                  </h4>
+                                  <div className="mt-1 flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                                    {/* Company Icon Initials */}
+                                    <span className={`inline-flex h-5 w-5 items-center justify-center rounded-md border text-[9px] font-bold ${getCompanyColor(app.company)}`}>
+                                      {app.company?.slice(0, 2).toUpperCase()}
+                                    </span>
+                                    <span className="truncate">{app.company}</span>
                                   </div>
                                 </div>
 
-                                {/* ATS Score Badge */}
+                                {/* Score Badge */}
                                 {app.atsScore > 0 && (
-                                  <motion.div
-                                    whileHover={{ scale: 1.1 }}
-                                    className={`rounded-lg px-3 py-1.5 text-xs font-bold shadow-md ${
+                                  <div
+                                    className={`rounded-lg px-2 py-1 text-[10px] font-extrabold shadow-sm shrink-0 border ${
                                       app.atsScore >= 70
-                                        ? "bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 border border-green-200"
+                                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-450 border-emerald-500/15"
                                         : app.atsScore >= 40
-                                        ? "bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-700 border border-yellow-200"
-                                        : "bg-gradient-to-r from-red-100 to-pink-100 text-red-700 border border-red-200"
+                                        ? "bg-amber-500/10 text-amber-605 dark:text-amber-400 border-amber-500/15"
+                                        : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/15"
                                     }`}
                                   >
                                     ⚡ {app.atsScore}%
-                                  </motion.div>
+                                  </div>
                                 )}
                               </div>
 
-                              {/* Notes */}
+                              {/* Description Notes */}
                               {app.notes && (
-                                <p className="mt-2 line-clamp-2 text-sm text-slate-500">
+                                <p className="mt-3 line-clamp-2 text-xs font-medium text-slate-500 dark:text-slate-400 leading-normal">
                                   {app.notes}
                                 </p>
                               )}
 
-                              {/* Missing Keywords */}
+                              {/* Missing Keywords list */}
                               {app.missingKeywords?.length > 0 && (
                                 <div className="mt-3 flex flex-wrap gap-1">
                                   {app.missingKeywords.slice(0, 3).map((keyword) => (
                                     <span
                                       key={keyword}
-                                      className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600"
+                                      className="rounded bg-slate-100 dark:bg-slate-800 border border-slate-200/10 px-1.5 py-0.5 text-[9px] font-semibold text-slate-550 dark:text-slate-400"
                                     >
                                       {keyword}
                                     </span>
                                   ))}
                                   {app.missingKeywords.length > 3 && (
-                                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">
+                                    <span className="rounded bg-slate-100 dark:bg-slate-850 px-1.5 py-0.5 text-[9px] font-bold text-slate-400">
                                       +{app.missingKeywords.length - 3}
                                     </span>
                                   )}
                                 </div>
                               )}
 
-                              {/* Footer */}
-                              <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
-                                <div className="flex items-center gap-1 text-xs text-slate-400">
+                              {/* Card Footer controls */}
+                              <div className="mt-4 flex items-center justify-between border-t border-slate-100 dark:border-slate-850/60 pt-3">
+                                <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 dark:text-slate-500">
                                   <Calendar className="h-3.5 w-3.5" />
                                   <span>{formatDate(app.appliedDate)}</span>
                                 </div>
 
-                                {/* Action Buttons */}
-                                <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                                <div className="flex items-center gap-1 opacity-0 group-hover/card:opacity-100 transition-opacity duration-200">
                                   <button
-                                    className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
-                                    title="View details"
+                                    className="rounded-lg p-1.5 text-slate-400 dark:text-slate-550 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
+                                    title="View Job Details"
                                   >
                                     <ExternalLink className="h-3.5 w-3.5" />
                                   </button>
                                   <button
-                                    className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600"
-                                    title="Delete"
+                                    className="rounded-lg p-1.5 text-slate-400 dark:text-slate-550 hover:bg-rose-500/10 hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
+                                    title="Delete Application"
                                     onClick={() => onDelete?.(app._id)}
                                   >
                                     <Trash2 className="h-3.5 w-3.5" />
@@ -197,18 +213,18 @@ const KanbanBoard = ({ applications = [], onStatusChange, onDelete }) => {
 
                   {provided.placeholder}
 
-                  {/* Empty State */}
+                  {/* Empty Stage State */}
                   {grouped[status.id].length === 0 && (
                     <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-200 py-12 text-center"
+                      className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 dark:border-slate-800 py-14 text-center"
                     >
-                      <div className={`mb-3 flex h-12 w-12 items-center justify-center rounded-full ${status.bg}`}>
-                        <Briefcase className={`h-6 w-6 ${status.text}`} />
+                      <div className={`mb-3.5 flex h-11 w-11 items-center justify-center rounded-xl ${status.bg} ${status.text}`}>
+                        <Briefcase className="h-5 w-5" />
                       </div>
-                      <p className="text-sm font-medium text-slate-500">No {status.label.toLowerCase()} jobs</p>
-                      <p className="mt-1 text-xs text-slate-400">Drag cards here</p>
+                      <p className="text-xs font-bold text-slate-600 dark:text-slate-400">No {status.label.toLowerCase()} jobs</p>
+                      <p className="mt-1 text-[10px] font-semibold text-slate-400 dark:text-slate-500">Drag & drop cards here</p>
                     </motion.div>
                   )}
                 </div>
@@ -217,13 +233,6 @@ const KanbanBoard = ({ applications = [], onStatusChange, onDelete }) => {
           </Droppable>
         ))}
       </div>
-
-      {/* Drag Overlay Visual Feedback */}
-      {draggingId && (
-        <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-indigo-500/5" />
-        </div>
-      )}
     </DragDropContext>
   );
 };
