@@ -124,7 +124,7 @@ const RegisterPage = () => {
                   <User className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 transition-colors duration-205 group-focus-within:text-indigo-500" />
                   <input
                     type="text"
-                    className="input-modern pl-12"
+                    className="input-modern !pl-12"
                     placeholder="John Doe"
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -140,7 +140,7 @@ const RegisterPage = () => {
                   <Mail className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 transition-colors duration-205 group-focus-within:text-indigo-500" />
                   <input
                     type="email"
-                    className="input-modern pl-12"
+                    className="input-modern !pl-12"
                     placeholder="you@example.com"
                     value={form.email}
                     onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -156,7 +156,7 @@ const RegisterPage = () => {
                   <Lock className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 transition-colors duration-205 group-focus-within:text-indigo-500" />
                   <input
                     type="password"
-                    className="input-modern pl-12"
+                    className="input-modern !pl-12"
                     placeholder="Min. 6 characters"
                     value={form.password}
                     onChange={(e) => setForm({ ...form, password: e.target.value })}
