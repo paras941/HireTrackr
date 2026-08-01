@@ -11,10 +11,15 @@ const router = express.Router();
 const upload = multer({
   storage: multer.memoryStorage(),
   fileFilter: (req, file, cb) => {
-    if (file.mimetype === "application/pdf") {
+    if (
+      file.mimetype === "application/pdf" ||
+      file.originalname.toLowerCase().endsWith(".pdf")
+    ) {
       cb(null, true);
     } else {
-      cb(new Error("Only PDF uploads are supported"));
+      const err = new Error("Only PDF uploads are supported");
+      err.status = 400;
+      cb(err);
     }
   },
 });
