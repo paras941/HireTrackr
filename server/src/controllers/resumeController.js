@@ -1,15 +1,17 @@
-const pdfParse = require("pdf-parse");
+const { PDFParse } = require("pdf-parse");
 const Resume = require("../middleware/models/Resume");
 const { extractSections } = require("../utils/resumeUtils");
 const { extractKeywords, calculateAtsScore } = require("../utils/keywordUtils");
 
 const uploadResume = async (req, res, next) => {
+  let parser;
   try {
     if (!req.file) {
       return res.status(400).json({ message: "Please upload a PDF file" });
     }
 
-    const parsed = await pdfParse(req.file.buffer);
+    parser = new PDFParse({ data: req.file.buffer });
+    const parsed = await parser.getText();
     const text = parsed.text || "";
     const sections = extractSections(text);
 
@@ -29,6 +31,10 @@ const uploadResume = async (req, res, next) => {
     return res.json(resume);
   } catch (error) {
     return next(error);
+  } finally {
+    if (parser) {
+      await parser.destroy().catch((err) => console.error("Error destroying PDFParse:", err));
+    }
   }
 };
 
