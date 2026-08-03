@@ -8,7 +8,8 @@ import {
 import {
   Upload, FileText, Sparkles, Target,
   Briefcase, Plus, Clock, AlertCircle, CheckCircle2, XCircle,
-  BarChart3, Lightbulb, ChevronRight, Zap, RefreshCw
+  BarChart3, Lightbulb, ChevronRight, Zap, RefreshCw,
+  Copy, Building2, TrendingUp, ChevronDown, ChevronUp, Wand2
 } from "lucide-react";
 import Layout from "../components/Layout";
 import KanbanBoard from "../components/KanbanBoard";
@@ -56,6 +57,9 @@ const DashboardPage = () => {
   const [isResumeDragging, setIsResumeDragging] = useState(false);
   const [jobDescription, setJobDescription] = useState("");
   const [analysis, setAnalysis] = useState(null);
+  const [companyEstimate, setCompanyEstimate] = useState(null);
+  const [showOptimizedResume, setShowOptimizedResume] = useState(false);
+  const [targetRole, setTargetRole] = useState("");
   const [recommendations, setRecommendations] = useState([]);
   const [applications, setApplications] = useState([]);
   const [analytics, setAnalytics] = useState(null);
@@ -67,18 +71,24 @@ const DashboardPage = () => {
   const refreshData = async () => {
     setIsRefreshing(true);
     try {
-      const [resumeRes, recRes, appRes, analyticsRes, reminderRes] = await Promise.all([
+      const [resumeRes, recRes, appRes, analyticsRes, reminderRes, companiesRes] = await Promise.all([
         http.get("/resume").catch(() => ({ data: null })),
         http.get("/insights/recommendations").catch(() => ({ data: [] })),
         http.get("/applications"),
         http.get("/insights/analytics"),
         http.get("/applications/reminders/list?days=7"),
+        http.get("/resume/companies").catch(() => ({ data: null })),
       ]);
       setResume(resumeRes.data);
       setRecommendations(recRes.data || []);
       setApplications(appRes.data?.data || appRes.data || []);
       setAnalytics(analyticsRes.data);
       setReminders(reminderRes.data?.reminders || []);
+      if (companiesRes.data) {
+        setCompanyEstimate(companiesRes.data);
+      } else if (resumeRes.data?.lastAnalysis?.companiesEstimate) {
+        setCompanyEstimate(resumeRes.data.lastAnalysis.companiesEstimate);
+      }
     } finally {
       setIsRefreshing(false);
     }
@@ -124,13 +134,28 @@ const DashboardPage = () => {
     }
     setLoading((l) => ({ ...l, analyze: true }));
     try {
-      const { data } = await http.post("/resume/analyze", { jobDescription });
+      const { data } = await http.post("/resume/analyze", { jobDescription, targetRole });
       setAnalysis(data);
-      toast.success("Analysis complete!");
+      if (data.companiesEstimate) {
+        setCompanyEstimate(data.companiesEstimate);
+      }
+      setShowOptimizedResume(true);
+      toast.success(data.aiPowered ? "Gemini AI optimization complete!" : "Analysis complete!");
     } catch (err) {
-      toast.error("Analysis failed");
+      const msg = err.response?.data?.message || "Analysis failed";
+      toast.error(msg);
     } finally {
       setLoading((l) => ({ ...l, analyze: false }));
+    }
+  };
+
+  const copyOptimizedResume = async () => {
+    if (!analysis?.optimizedResume) return;
+    try {
+      await navigator.clipboard.writeText(analysis.optimizedResume);
+      toast.success("Optimized resume copied to clipboard!");
+    } catch {
+      toast.error("Failed to copy");
     }
   };
 
@@ -312,6 +337,16 @@ const DashboardPage = () => {
             progress={reminders.length > 0 ? Math.min(reminders.length * 20, 100) : 0}
             description="Actions required this week"
           />
+          {companyEstimate?.totalCount > 0 && (
+            <StatsCard
+              icon={<Building2 className="h-5 w-5" />}
+              label="Companies to Apply"
+              value={`${companyEstimate.totalCount}+`}
+              color="indigo"
+              progress={Math.min(companyEstimate.totalCount, 100)}
+              description={companyEstimate.summary || "Estimated based on your resume"}
+            />
+          )}
         </motion.div>
 
         {/* Resume Upload & ATS Section */}
@@ -322,8 +357,8 @@ const DashboardPage = () => {
                 <Target className="h-6 w-6" />
               </div>
               <div>
-                <h2 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">Resume ATS Optimizer</h2>
-                <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">Optimize your resume for Applicant Tracking Systems</p>
+                <h2 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">Resume AI Optimizer</h2>
+                <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">Gemini-powered resume optimization for your target role</p>
               </div>
             </div>
           </div>
@@ -381,32 +416,45 @@ const DashboardPage = () => {
               </div>
 
               {/* Job Description */}
-              <div>
-                <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                  Target Job Description
-                </label>
-                <textarea
-                  className="input-modern h-38 resize-none"
-                  placeholder="Paste the job description here to analyze how well your resume matches..."
-                  value={jobDescription}
-                  onChange={(e) => setJobDescription(e.target.value)}
-                />
+              <div className="space-y-3">
+                <div>
+                  <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                    Target Role (optional)
+                  </label>
+                  <input
+                    className="input-modern"
+                    placeholder="e.g. Senior Frontend Developer"
+                    value={targetRole}
+                    onChange={(e) => setTargetRole(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                    Target Job Description
+                  </label>
+                  <textarea
+                    className="input-modern h-32 resize-none"
+                    placeholder="Paste the job description here — Gemini will analyze and rewrite your resume for this role..."
+                    value={jobDescription}
+                    onChange={(e) => setJobDescription(e.target.value)}
+                  />
+                </div>
                 <motion.button
                   whileHover={{ scale: 1.01, y: -1 }}
                   whileTap={{ scale: 0.99 }}
                   onClick={runAnalysis}
                   disabled={loading.analyze || !resume}
-                  className="btn-primary mt-4 flex w-full items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="btn-primary mt-1 flex w-full items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {loading.analyze ? (
                     <>
                       <div className="spinner" />
-                      <span>Scanning Match...</span>
+                      <span>Gemini is optimizing...</span>
                     </>
                   ) : (
                     <>
-                      <Sparkles className="h-4.5 w-4.5" />
-                      Analyze Match
+                      <Wand2 className="h-4.5 w-4.5" />
+                      Optimize with Gemini AI
                     </>
                   )}
                 </motion.button>
@@ -420,26 +468,58 @@ const DashboardPage = () => {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="mt-6 overflow-hidden border-t border-slate-200/50 dark:border-slate-800/80 pt-6"
+                  className="mt-6 overflow-hidden border-t border-slate-200/50 dark:border-slate-800/80 pt-6 space-y-6"
                 >
-                  <div className="grid gap-4 md:grid-cols-3">
+                  {analysis.aiPowered && (
+                    <div className="flex items-center gap-2 rounded-xl border border-indigo-500/20 bg-indigo-500/5 dark:bg-indigo-400/5 px-4 py-2.5">
+                      <Sparkles className="h-4 w-4 text-indigo-500" />
+                      <p className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                        Powered by Google Gemini AI
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                     {/* Match Score Card */}
                     <div className="relative overflow-hidden rounded-2xl border border-slate-200/60 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20 p-5 flex items-center justify-between gap-4">
                       <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">ATS Match Score</p>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Current Match</p>
                         <p className={`mt-2 text-4xl font-extrabold ${getScoreColor(analysis.matchPercentage)}`}>
                           {analysis.matchPercentage}%
                         </p>
-                        <p className="text-[11px] font-medium text-slate-400 mt-2">Resume fit strength</p>
+                        {analysis.improvedMatchPercentage != null && (
+                          <p className="mt-2 flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                            <TrendingUp className="h-3.5 w-3.5" />
+                            → {analysis.improvedMatchPercentage}% after optimization
+                          </p>
+                        )}
                       </div>
                       <CircularProgress percentage={analysis.matchPercentage} />
                     </div>
+
+                    {/* Companies You Can Apply To */}
+                    {(companyEstimate || analysis.companiesEstimate) && (
+                      <div className="rounded-2xl border border-indigo-500/15 bg-indigo-500/3 dark:bg-indigo-400/3 p-5 md:col-span-1 lg:col-span-1">
+                        <div className="flex items-center gap-2">
+                          <Building2 className="h-4 w-4 text-indigo-500" />
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+                            Companies You Can Apply To
+                          </p>
+                        </div>
+                        <p className="mt-3 text-4xl font-extrabold text-indigo-600 dark:text-indigo-400">
+                          {(analysis.companiesEstimate || companyEstimate)?.totalCount || 0}+
+                        </p>
+                        <p className="mt-2 text-[11px] font-medium text-slate-500 dark:text-slate-400 leading-relaxed">
+                          {(analysis.companiesEstimate || companyEstimate)?.summary || "Estimated market fit for this role"}
+                        </p>
+                      </div>
+                    )}
 
                     {/* Missing Keywords */}
                     <div className="rounded-2xl border border-rose-500/10 bg-rose-500/3 dark:bg-rose-450/3 p-5">
                       <p className="text-[10px] font-bold uppercase tracking-wider text-rose-550 dark:text-rose-400">Missing Keywords</p>
                       <div className="mt-3 flex flex-wrap gap-1.5">
-                        {analysis.missingKeywords.length > 0 ? (
+                        {analysis.missingKeywords?.length > 0 ? (
                           analysis.missingKeywords.slice(0, 6).map((keyword) => (
                             <span
                               key={keyword}
@@ -451,7 +531,7 @@ const DashboardPage = () => {
                         ) : (
                           <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">None detected</span>
                         )}
-                        {analysis.missingKeywords.length > 6 && (
+                        {analysis.missingKeywords?.length > 6 && (
                           <span className="rounded-lg bg-rose-500/10 px-2.5 py-1 text-xs font-bold text-rose-600 dark:text-rose-400">
                             +{analysis.missingKeywords.length - 6} more
                           </span>
@@ -459,14 +539,145 @@ const DashboardPage = () => {
                       </div>
                     </div>
 
-                    {/* Suggestions */}
+                    {/* Top Suggestion */}
                     <div className="rounded-2xl border border-emerald-500/10 bg-emerald-500/3 dark:bg-emerald-450/3 p-5">
                       <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Top Recommendation</p>
                       <p className="mt-3 text-sm font-semibold text-slate-700 dark:text-slate-350 leading-relaxed">
-                        {analysis.suggestions[0] || "Great alignment! Your resume matches the job profile well."}
+                        {analysis.suggestions?.[0] || analysis.roleFit || "Great alignment! Your resume matches the job profile well."}
                       </p>
                     </div>
                   </div>
+
+                  {/* Company Breakdown */}
+                  {(analysis.companiesEstimate || companyEstimate)?.breakdown?.length > 0 && (
+                    <div className="rounded-2xl border border-slate-200/60 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20 p-5">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-4">
+                        Company Breakdown by Category
+                      </p>
+                      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                        {(analysis.companiesEstimate || companyEstimate).breakdown.map((item) => (
+                          <div
+                            key={item.category}
+                            className="rounded-xl border border-slate-200/50 dark:border-slate-800 bg-white/60 dark:bg-slate-900/60 p-4"
+                          >
+                            <div className="flex items-center justify-between">
+                              <p className="text-sm font-bold text-slate-800 dark:text-white">{item.category}</p>
+                              <span className="badge badge-success">{item.count}+</span>
+                            </div>
+                            {item.examples?.length > 0 && (
+                              <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                                e.g. {item.examples.slice(0, 3).join(", ")}
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Strengths & Weaknesses (AI only) */}
+                  {analysis.aiPowered && (analysis.strengths?.length > 0 || analysis.weaknesses?.length > 0) && (
+                    <div className="grid gap-4 md:grid-cols-2">
+                      {analysis.strengths?.length > 0 && (
+                        <div className="rounded-2xl border border-emerald-500/10 bg-emerald-500/3 p-5">
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-3">Strengths</p>
+                          <ul className="space-y-2">
+                            {analysis.strengths.map((s, i) => (
+                              <li key={i} className="flex items-start gap-2 text-xs font-medium text-slate-700 dark:text-slate-300">
+                                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                                {s}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {analysis.weaknesses?.length > 0 && (
+                        <div className="rounded-2xl border border-amber-500/10 bg-amber-500/3 p-5">
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 mb-3">Areas to Improve</p>
+                          <ul className="space-y-2">
+                            {analysis.weaknesses.map((w, i) => (
+                              <li key={i} className="flex items-start gap-2 text-xs font-medium text-slate-700 dark:text-slate-300">
+                                <AlertCircle className="h-3.5 w-3.5 text-amber-500 shrink-0 mt-0.5" />
+                                {w}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* All Suggestions */}
+                  {analysis.suggestions?.length > 1 && (
+                    <div className="rounded-2xl border border-slate-200/60 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20 p-5">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-3">
+                        AI Suggestions
+                      </p>
+                      <ul className="space-y-2">
+                        {analysis.suggestions.map((s, i) => (
+                          <li key={i} className="flex items-start gap-2 text-xs font-medium text-slate-600 dark:text-slate-400">
+                            <Lightbulb className="h-3.5 w-3.5 text-indigo-500 shrink-0 mt-0.5" />
+                            {s}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Optimized Resume */}
+                  {analysis.optimizedResume && (
+                    <div className="rounded-2xl border border-indigo-500/20 bg-indigo-500/3 dark:bg-indigo-400/3 overflow-hidden">
+                      <button
+                        type="button"
+                        onClick={() => setShowOptimizedResume(!showOptimizedResume)}
+                        className="flex w-full items-center justify-between p-5 text-left hover:bg-indigo-500/5 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
+                            <FileText className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-extrabold text-slate-900 dark:text-white">Optimized Resume</p>
+                            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                              Tailored by Gemini for your target role — click to {showOptimizedResume ? "hide" : "view"}
+                            </p>
+                          </div>
+                        </div>
+                        {showOptimizedResume ? (
+                          <ChevronUp className="h-5 w-5 text-slate-400" />
+                        ) : (
+                          <ChevronDown className="h-5 w-5 text-slate-400" />
+                        )}
+                      </button>
+                      <AnimatePresence>
+                        {showOptimizedResume && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="overflow-hidden border-t border-indigo-500/10"
+                          >
+                            <div className="p-5">
+                              <div className="flex justify-end mb-3">
+                                <motion.button
+                                  whileHover={{ scale: 1.03 }}
+                                  whileTap={{ scale: 0.97 }}
+                                  onClick={copyOptimizedResume}
+                                  className="flex items-center gap-2 rounded-lg bg-indigo-500 px-3 py-1.5 text-xs font-bold text-white hover:bg-indigo-600 transition-colors"
+                                >
+                                  <Copy className="h-3.5 w-3.5" />
+                                  Copy Resume
+                                </motion.button>
+                              </div>
+                              <pre className="whitespace-pre-wrap rounded-xl border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 text-xs font-medium text-slate-700 dark:text-slate-300 leading-relaxed max-h-96 overflow-y-auto">
+                                {analysis.optimizedResume}
+                              </pre>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>
