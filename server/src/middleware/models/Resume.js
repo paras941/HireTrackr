@@ -8,6 +8,14 @@ const resumeSchema = new mongoose.Schema(
     keywords: { type: [String], default: [] },
     skillsText: { type: String, default: "" },
     experienceText: { type: String, default: "" },
+    optimizedText: { type: String, default: "" },
+    lastAnalysis: {
+      matchScore: { type: Number },
+      improvedMatchScore: { type: Number },
+      targetRole: { type: String },
+      companiesEstimate: { type: mongoose.Schema.Types.Mixed },
+      analyzedAt: { type: Date },
+    },
   },
   { timestamps: true }
 );
