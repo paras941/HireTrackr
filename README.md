@@ -6,7 +6,9 @@ HireTrackr is a full-stack job application tracker that combines pipeline manage
 
 - JWT authentication with protected routes
 - Resume upload (PDF) and keyword extraction
+- **Gemini AI** resume optimization tailored to specific job roles
 - ATS-style job description analysis and match scoring
+- Company application estimate based on resume fit
 - Drag-and-drop Kanban board for application stages
 - Role recommendations based on extracted resume skills
 - Analytics for interview rate, rejection rate, and missing skills
@@ -89,7 +91,10 @@ PORT=5000
 MONGO_URI=your_mongodb_connection_string
 JWT_SECRET=your_super_secret_key
 CLIENT_URL=http://localhost:5173
+GEMINI_API_KEY=your_google_gemini_api_key
 ```
+
+Get a free Gemini API key at [Google AI Studio](https://aistudio.google.com/apikey). Without it, the app falls back to keyword-based analysis.
 
 ### 3. Start both apps
 
@@ -137,6 +142,7 @@ Resume
 - GET /resume
 - POST /resume/upload
 - POST /resume/analyze
+- GET /resume/companies
 
 Applications
 - GET /applications
@@ -163,7 +169,7 @@ Backend (Render)
 - Root directory: server
 - Build command: npm install
 - Start command: npm start
-- Environment variables: PORT, MONGO_URI, JWT_SECRET, CLIENT_URL
+- Environment variables: PORT, MONGO_URI, JWT_SECRET, CLIENT_URL, GEMINI_API_KEY
 
 MongoDB
 - Use MongoDB Atlas or a self-hosted MongoDB instance
@@ -172,6 +178,5 @@ MongoDB
 ## Future Improvements
 
 - Persist resume files in cloud storage (S3/Cloudinary)
-- Add semantic matching with embeddings
 - Add automated follow-up notifications (email/WhatsApp)
 - Add richer trends by role, location, and company
