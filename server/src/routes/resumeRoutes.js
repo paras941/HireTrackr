@@ -5,6 +5,7 @@ const {
   uploadResume,
   analyzeJobDescription,
   getResume,
+  getCompanyEstimate,
 } = require("../controllers/resumeController");
 
 const router = express.Router();
@@ -25,6 +26,7 @@ const upload = multer({
 });
 
 router.get("/", auth, getResume);
+router.get("/companies", auth, getCompanyEstimate);
 router.post("/upload", auth, upload.single("resume"), uploadResume);
 router.post("/analyze", auth, analyzeJobDescription);
 
